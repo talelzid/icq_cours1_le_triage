@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Triage qualité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : poste de triage. Parcours des 3 manches en tête, ticket papier au centre, bacs qui se remplissent en bas.
+   Look unique assumé (salle de contrôle sombre), donc pas de variante claire. */
+:root{
+  color-scheme: dark;
+  --night:#121a22; --panel:#1b2631; --panel-2:#22303d; --line:#2f3f4d;
+  --ink:#e8eef2; --muted:#93a6b6;
+  --paper:#f3efe4; --paper-ink:#1f2328;
+  --signal:#ffb000; --ok:#3ccf91; --ko:#ff5d5d;
+  --b1:#4fa3ff; --b2:#ffb000; --b3:#ff6b6b; --b4:#b18cff;
+  --display:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --bg-image:url("fond.jpg");
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+html,body{height:100%}
+body{background-color:var(--night);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  background-image:linear-gradient(180deg,rgba(18,26,34,.70),rgba(18,26,34,.88) 55%,rgba(18,26,34,.96)),var(--bg-image);
+  background-size:cover;background-position:center top;background-attachment:fixed}
+.wrap{max-width:1080px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:20px;
+  padding-block:18px 28px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:.01em}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
+.btn{background:var(--signal);color:#1a1300;border:0;border-radius:4px;padding:14px 24px;font-weight:600;font-size:17px;display:inline-flex;gap:10px;align-items:center}
+.btn small{font-weight:500;opacity:.75;font-size:14px}
+.btn.ghost{background:rgba(27,38,49,.8);color:var(--ink);border:1px solid var(--line)}
+.btn.mini{padding:6px 10px;font-size:12px;font-family:var(--mono);font-weight:500;background:rgba(27,38,49,.8);color:var(--muted);border:1px solid var(--line)}
+.btn:hover{filter:brightness(1.1)}
+
+/* En-tête */
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px}
+.brand{display:flex;align-items:baseline;gap:12px}
+.brand h1{font-size:30px;font-weight:900;text-transform:uppercase}
+.brand .tape{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hud{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.hud .stat{display:flex;flex-direction:column;align-items:flex-end}
+.hud small{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hud b{font-family:var(--display);font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+
+/* Parcours des manches */
+.track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;counter-reset:m}
+.step{background:rgba(27,38,49,.88);border:1px solid var(--line);border-radius:4px;padding:10px 12px;display:flex;gap:10px;align-items:center;min-width:0}
+.step .num{font-family:var(--display);font-size:30px;font-weight:900;line-height:1;color:var(--muted);flex:none;width:28px;text-align:center}
+.step .lbl{min-width:0}
+.step .lbl small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.step .lbl span{display:block;font-weight:600;font-size:14px;line-height:1.25}
+.step.now{border-color:var(--signal);background:rgba(43,36,14,.92)}
+.step.now .num{color:var(--signal)}
+.step.done .num{color:var(--ok)}
+.step.done .lbl small{color:var(--ok)}
+.track.big .step{padding:16px;flex-direction:column;align-items:flex-start;gap:6px}
+.track.big .step .num{font-size:44px;width:auto}
+.track.big .step .lbl span{font-size:16px}
+.track.big .step .lbl em{display:block;font-style:normal;color:var(--muted);font-size:13px;margin-top:4px}
+@media (max-width:620px){.track{grid-template-columns:minmax(0,1fr)}.track:not(.big) .step .lbl span{font-size:13px}}
+
+/* Écrans */
+.screen{flex:1;display:flex;flex-direction:column;gap:20px}
+.intro{max-width:700px}
+.intro h2{font-size:clamp(40px,7vw,68px);font-weight:900;text-transform:uppercase;line-height:.95}
+.intro p{color:var(--ink);opacity:.85;max-width:62ch;margin:10px 0 0}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.rules div{border-top:2px solid var(--line);padding-top:10px}
+.rules b{display:block;font-family:var(--display);font-size:20px}
+.rules span{color:var(--muted);font-size:14px}
+.opts{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.opts label{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:14px}
+
+/* Zone de jeu */
+.board{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
+@media (max-width:780px){.board{grid-template-columns:minmax(0,1fr)}}
+.queue{min-width:0}
+.queue-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+.gwrap{display:flex;align-items:center;gap:10px}
+.gwrap span{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gwrap.warn span{color:var(--signal)}.gwrap.hot span{color:var(--ko)}
+.gauge{display:flex;gap:4px}
+.gauge i{width:18px;height:8px;background:var(--line);border-radius:1px}
+.gauge i.on{background:var(--muted)}
+.gauge.warn i.on{background:var(--signal)}
+.gauge.hot i.on{background:var(--ko)}
+.ticket{background:var(--paper);color:var(--paper-ink);border-radius:3px;padding:18px 22px 22px;position:relative;
+  box-shadow:0 14px 34px rgba(0,0,0,.5);
+  background-image:radial-gradient(circle at 0 50%, var(--night) 7px, transparent 8px),radial-gradient(circle at 100% 50%, var(--night) 7px, transparent 8px)}
+.ticket .tid{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:#6b6457;border-bottom:1px dashed #c9c1ae;padding-bottom:8px;margin-bottom:12px}
+.ticket p{margin:0;font-size:clamp(18px,2.4vw,23px);font-weight:500;line-height:1.35;min-height:3.2em}
+.ticket .wait{position:absolute;left:0;bottom:0;height:5px;background:var(--signal);width:100%;transform-origin:left;border-radius:0 0 0 3px}
+.ticket.in{animation:slide .3s ease-out}
+.ticket.shake{animation:shake .35s}
+.ticket.gone{visibility:hidden}
+.ticket .stamp{position:absolute;top:10px;right:16px;font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:.06em;
+  color:var(--ko);border:3px solid var(--ko);border-radius:3px;padding:0 8px;transform:rotate(-6deg);opacity:0;transition:opacity .2s;background:rgba(243,239,228,.85)}
+.ticket.late{box-shadow:0 0 0 3px var(--ko),0 14px 34px rgba(0,0,0,.5);animation:pulse 1.6s ease-in-out infinite}
+.ticket.late .stamp{opacity:1}
+.ticket.late .tid span:last-child{color:var(--ko);font-weight:500}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,93,93,.35),0 14px 34px rgba(0,0,0,.5)}}
+@keyframes slide{from{transform:translateY(-14px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+.behind{margin-top:-4px;display:flex;flex-direction:column;align-items:center}
+.behind span{display:block;height:10px;background:#d9d3c4;border-radius:0 0 3px 3px}
+.flyer{position:fixed;z-index:50;pointer-events:none;background:var(--paper);border-radius:3px;box-shadow:0 10px 24px rgba(0,0,0,.5);
+  transition:transform .45s cubic-bezier(.5,0,.3,1),opacity .45s ease-in}
+
+.log{background:rgba(27,38,49,.95);border:1px solid var(--line);border-radius:4px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.log h3{font-size:18px;text-transform:uppercase;color:var(--muted)}
+.verdict{font-family:var(--display);font-size:24px;font-weight:800}
+.verdict.ok{color:var(--ok)} .verdict.ko{color:var(--ko)}
+.log p{margin:0;font-size:15px}
+.log .hint{color:var(--muted);font-size:14px}
+
+/* Bacs */
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:stretch}
+.bin{background:rgba(27,38,49,.96);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:4px;padding:12px 12px 10px;text-align:left;
+  display:flex;flex-direction:column;gap:4px;min-width:0;transition:transform .08s,background-color .2s}
+.bin:hover{transform:translateY(-2px);border-color:var(--c)}
+.bin:active{transform:translateY(1px)}
+.bin .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bin .k{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.bin .count{font-family:var(--display);font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);line-height:1}
+.bin .n{font-family:var(--display);font-size:24px;font-weight:800;text-transform:uppercase;line-height:1}
+.bin .d{font-size:13px;color:var(--muted)}
+.tray{margin-top:8px;min-height:72px;border-radius:3px;background:rgba(0,0,0,.28);border:1px dashed var(--line);
+  display:flex;flex-direction:column-reverse;align-items:center;padding:6px 6px 4px;gap:0}
+.tray .slip{width:100%;height:11px;background:var(--paper);border-radius:2px;margin-top:-3px;box-shadow:0 1px 0 rgba(0,0,0,.35);position:relative;flex:none}
+.tray .slip:nth-child(odd){transform:rotate(-1.2deg)}
+.tray .slip:nth-child(even){transform:rotate(1deg) translateX(3px)}
+.tray .slip.fix{background:repeating-linear-gradient(135deg,#f3d6d2 0 6px,#f3efe4 6px 12px);border-left:4px solid var(--ko)}
+.tray .slip.new{animation:drop .3s ease-out}
+.tray:empty::after{content:"vide";font-family:var(--mono);font-size:11px;color:var(--muted);margin:auto}
+@keyframes drop{from{transform:translateY(-10px);opacity:0}}
+.bin.flash-ok{background:color-mix(in srgb,var(--ok) 28%,var(--panel))}
+.bin.flash-ko{background:color-mix(in srgb,var(--ko) 28%,var(--panel))}
+.bin.show-right{outline:3px solid var(--ok);outline-offset:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.legend i{display:inline-block;width:22px;height:9px;border-radius:2px;background:var(--paper);vertical-align:middle;margin-right:6px}
+.legend i.fix{background:repeating-linear-gradient(135deg,#f3d6d2 0 6px,#f3efe4 6px 12px);border-left:4px solid var(--ko)}
+
+/* Fin de manche et fin de partie */
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.results div{background:rgba(27,38,49,.9);border-top:2px solid var(--line);padding:10px 12px}
+.results b{font-family:var(--display);font-size:36px;font-weight:800;font-variant-numeric:tabular-nums}
+.results small{display:block;color:var(--muted);font-size:13px}
+.review{display:flex;flex-direction:column;gap:10px}
+.review article{background:rgba(27,38,49,.95);border-left:4px solid var(--ko);padding:10px 14px;border-radius:2px}
+.review article p{margin:0}
+.review .r{font-size:14px;color:var(--muted);margin-top:4px}
+.pill{font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:2px;background:var(--line);color:var(--ink);text-transform:uppercase;letter-spacing:.06em}
+
+@media (prefers-reduced-motion:reduce){.ticket.late,.ticket.in,.ticket.shake,.tray .slip.new{animation:none}.bin,.flyer{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Le Triage</h1><span class="tape">ICQ · Cours 1</span></div>
+    <div class="hud">
+      <div class="stat" id="hudStats" hidden><small>Série</small><b id="hCombo">×0</b></div>
+      <div class="stat" id="hudScore" hidden><small>Points</small><b id="hScore">0</b></div>
+    </div>
+  </header>
+
+  <!-- Accueil -->
+  <section class="screen" id="sIntro">
+    <div class="intro">
+      <div class="eyebrow">Centre de support · quart de nuit</div>
+      <h2>Trois manches.<br>Un seul quart.</h2>
+      <p>Des tickets arrivent au centre de support. Chacun décrit une situation. Envoyez-le dans le bon bac et regardez les bacs se remplir. Chaque manche porte sur une famille de vocabulaire du cours.</p>
+    </div>
+    <div class="track big" id="introTrack"></div>
+    <div class="rules">
+      <div><b>Cliquez un bac</b><span>ou appuyez sur 1, 2, 3, 4 au clavier.</span></div>
+      <div><b>Enchaînez</b><span>Les bonnes réponses consécutives font monter la série. Un ticket trié en moins de 20 secondes rapporte un bonus ; au-delà, il passe « en retard ».</span></div>
+      <div><b>Lisez le verdict</b><span>Chaque ticket est expliqué. Un ticket mal trié est déplacé dans le bon bac, hachuré.</span></div>
+    </div>
+    <div class="opts">
+      <button class="btn" id="bStart" type="button">Commencer la manche 1 <small id="startInfo"></small></button>
+      <label><input type="checkbox" id="optCalm"> Sans chrono : un nouveau ticket arrive seulement quand le précédent est trié</label>
+    </div>
+  </section>
+
+  <!-- Présentation d'une manche (manches 2 et 3) -->
+  <section class="screen" id="sRound" hidden>
+    <div class="track" id="roundTrack"></div>
+    <div class="results" id="prevResult"></div>
+    <div class="intro">
+      <div class="eyebrow" id="rEyebrow"></div>
+      <h2 id="rTitle"></h2>
+      <p id="rDesc"></p>
+    </div>
+    <div class="bins" id="rBins"></div>
+    <div><button class="btn" id="bGo" type="button"></button></div>
+  </section>
+
+  <!-- Jeu -->
+  <section class="screen" id="sPlay" hidden>
+    <div class="track" id="playTrack"></div>
+    <div class="board">
+      <div class="queue">
+        <div class="queue-meta">
+          <span class="eyebrow" id="pLabel">File d'attente</span>
+          <div class="gwrap" id="gwrap"><span id="gLabel">File : 0/6</span><div class="gauge" id="gauge" aria-hidden="true"></div></div>
+        </div>
+        <div id="front"></div>
+        <div class="behind" id="behind"></div>
+      </div>
+      <aside class="log" aria-live="polite" id="log"></aside>
+    </div>
+    <div class="bins" id="bins"></div>
+    <div class="legend"><span><i></i>bien trié</span><span><i class="fix"></i>mal trié, replacé dans le bon bac</span></div>
+  </section>
+
+  <!-- Fin -->
+  <section class="screen" id="sEnd" hidden>
+    <div class="track" id="endTrack"></div>
+    <div class="intro">
+      <div class="eyebrow">Fin du quart</div>
+      <h2>File vidée.</h2>
+    </div>
+    <div class="results" id="results"></div>
+    <h3 style="font-size:24px;text-transform:uppercase">À revoir en plénière</h3>
+    <div class="review" id="review"></div>
+    <div class="opts"><button class="btn ghost" id="bAgain" type="button">Rejouer</button></div>
+  </section>
+</div>
+
+
+<script>
+fetch('contenu-source.json', {cache:'no-store'})
+  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(start)
+  .catch(() => {
+    document.getElementById('bStart').hidden = true;
+    const p = document.createElement('p');
+    p.style.cssText = 'color:var(--ko);max-width:62ch';
+    p.textContent = "Le fichier contenu-source.json n'a pas pu être chargé. Ouvrez le jeu depuis GitHub Pages ou un serveur local, pas en double-cliquant sur index.html (voir LISEZMOI.md).";
+    document.querySelector('#sIntro .opts').after(p);
+  });
+
+function start(DATA){
+  const NB = DATA.manches.length;
+  const COLORS = ['var(--b1)','var(--b2)','var(--b3)','var(--b4)'];
+  const QMAX = 6;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const screens = ['sIntro','sRound','sPlay','sEnd'];
+  const show = id => { screens.forEach(s => $(s).hidden = s !== id); scrollTo(0,0); };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const plural = (n,w) => `${n} ${w}${n>1?'s':''}`;
+
+  let S;
+  function newGame(){
+    S = { m:0, score:0, combo:0, best:0, calm:$('optCalm').checked,
+          stats: DATA.manches.map(()=>({ok:0,total:0})), misses:[],
+          deck:[], queue:[], timer:null, nextIn:0, frontSince:0, lock:false };
+  }
+  const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const manche = () => DATA.manches[S.m];
+
+  // Parcours des 3 manches : toujours visible
+  function renderTrack(el, current, big){
+    el.innerHTML = DATA.manches.map((m,i)=>{
+      const st = !S ? '' : i < current ? 'done' : i === current ? 'now' : '';
+      const tag = st==='done' ? `Terminée · ${S.stats[i].ok}/${S.stats[i].total}` : st==='now' ? 'En cours' : `Manche ${i+1}`;
+      const extra = big ? `<em>${plural(m.tickets.length,'ticket')} · ${m.bacs.length} bacs</em>` : '';
+      return `<div class="step ${st}"><span class="num">${i+1}</span><span class="lbl"><small>${tag}</small><span>${esc(m.court)}</span>${extra}</span></div>`;
+    }).join('');
+  }
+
+  function renderBins(el, interactive){
+    el.innerHTML = '';
+    manche().bacs.forEach((b,i)=>{
+      const n = document.createElement(interactive?'button':'div');
+      n.className='bin'; n.style.setProperty('--c',COLORS[i]); n.dataset.id=b.id;
+      n.innerHTML = `<span class="row"><span class="k">Touche ${i+1}</span>${interactive?'<span class="count">0</span>':''}</span>
+        <span class="n">${esc(b.nom)}</span><span class="d">${esc(b.aide)}</span>${interactive?'<span class="tray"></span>':''}`;
+      if(interactive){ n.type='button'; n.setAttribute('aria-label', `${b.nom} : ${b.aide}`); n.addEventListener('click',()=>sort(b.id)); }
+      el.appendChild(n);
+    });
+  }
+
+  function hud(){
+    $('hCombo').textContent = `×${S.combo}`;
+    $('hScore').textContent = S.score;
+  }
+  function showHud(on){ $('hudStats').hidden = $('hudScore').hidden = !on; }
+
+  function roundIntro(){
+    const m = manche(), p = S.m-1;
+    renderTrack($('roundTrack'), S.m);
+    $('prevResult').innerHTML = `<div><b>${S.stats[p].ok}/${S.stats[p].total}</b><small>Manche ${p+1} terminée · ${esc(DATA.manches[p].court)}</small></div><div><b>${S.score}</b><small>Points cumulés</small></div>`;
+    $('rEyebrow').textContent = `Manche ${S.m+1} sur ${NB} · ${plural(m.tickets.length,'ticket')}`;
+    $('rTitle').textContent = m.titre;
+    $('rDesc').textContent = m.description;
+    renderBins($('rBins'), false);
+    $('bGo').innerHTML = `Commencer la manche ${S.m+1} <small>${plural(m.tickets.length,'ticket')} à trier</small>`;
+    show('sRound'); $('bGo').focus();
+  }
+
+  function startRound(){
+    const m = manche();
+    S.deck = shuffle(m.tickets); S.queue = []; $('front').dataset.cur = '';
+    S.queue.push(S.deck.shift());
+    S.nextIn = m.cadence; S.frontSince = performance.now();
+    renderTrack($('playTrack'), S.m);
+    renderBins($('bins'), true);
+    $('log').innerHTML = `<h3>Verdict</h3><p class="hint">Lisez le ticket, puis choisissez le bac qui correspond. Le verdict s'affiche ici.</p>`;
+    show('sPlay'); renderQueue();
+    clearInterval(S.timer);
+    S.timer = setInterval(tick, 100);
+  }
+
+  function tick(){
+    if(!S.calm && S.deck.length){
+      S.nextIn -= .1;
+      if(S.nextIn <= 0){ S.queue.push(S.deck.shift()); S.nextIn = manche().cadence; renderQueue(); }
+    }
+    const bar = document.querySelector('#front .wait');
+    if(bar){
+      const el = (performance.now()-S.frontSince)/1000;
+      bar.style.transform = `scaleX(${Math.max(0,1-el/DATA.attente)})`;
+      if(el >= DATA.attente && !S.late){
+        S.late = true;
+        const tk = document.querySelector('#front .ticket');
+        tk.classList.remove('in'); tk.classList.add('late');
+        tk.querySelector('.tid span:last-child').textContent = 'délai dépassé';
+      }
+    }
+  }
+
+  function renderQueue(){
+    const f = $('front'), b = $('behind');
+    if(!S.queue.length){
+      if(S.deck.length){ S.queue.push(S.deck.shift()); S.nextIn = manche().cadence; }
+      else { endRound(); return; }
+    }
+    const t = S.queue[0];
+    const idx = manche().tickets.indexOf(t)+1;
+    if(f.dataset.cur !== String(idx)){
+      f.dataset.cur = idx;
+      f.innerHTML = `<div class="ticket in"><div class="tid"><span>TCK-${S.m+1}${String(idx).padStart(2,'0')}</span><span>${S.calm?'sans chrono':'en attente'}</span></div><span class="stamp" aria-hidden="true">EN RETARD</span><p>${esc(t.texte)}</p>${S.calm?'':'<div class="wait"></div>'}</div>`;
+      S.frontSince = performance.now(); S.late = false;
+    }
+    b.innerHTML = '';
+    S.queue.slice(1,5).forEach((_,i)=>{ const s=document.createElement('span'); s.style.width=(96-i*6)+'%'; s.style.opacity=(.85-i*.18); b.appendChild(s); });
+    const g = $('gauge'); g.innerHTML=''; const n=S.queue.length;
+    for(let i=0;i<QMAX;i++){ const x=document.createElement('i'); if(i<n) x.className='on'; g.appendChild(x); }
+    const lvl = n>=5?' hot':n>=3?' warn':'';
+    g.className = 'gauge' + lvl; $('gwrap').className = 'gwrap' + lvl;
+    $('gLabel').textContent = `File : ${n}/${QMAX}`;
+    const left = S.deck.length + S.queue.length;
+    $('pLabel').textContent = `Manche ${S.m+1} · ${plural(left,'ticket')} restant${left>1?'s':''}`;
+  }
+
+  // Le ticket « vole » jusqu'au bac de destination, puis une fiche s'ajoute à la pile
+  function flyTo(binEl, fixed, text, done){
+    const tk = document.querySelector('#front .ticket');
+    const tray = binEl.querySelector('.tray');
+    const addSlip = () => {
+      const s = document.createElement('span');
+      s.className = 'slip new' + (fixed?' fix':''); s.title = text;
+      tray.appendChild(s);
+      const c = binEl.querySelector('.count'); c.textContent = tray.children.length;
+      done();
+    };
+    if(!tk || reduce){ addSlip(); return; }
+    const a = tk.getBoundingClientRect(), z = tray.getBoundingClientRect();
+    const fl = document.createElement('div'); fl.className='flyer';
+    Object.assign(fl.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px'});
+    document.body.appendChild(fl); tk.classList.add('gone');
+    const sx = z.width/a.width, sy = 14/a.height;
+    const dx = (z.left + z.width/2) - (a.left + a.width/2), dy = (z.top + 10) - (a.top + a.height/2);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      fl.style.transform = `translate(${dx}px,${dy}px) scale(${sx},${sy})`; fl.style.opacity = '.6';
+    }));
+    setTimeout(()=>{ fl.remove(); addSlip(); }, 460);
+  }
+
+  function sort(id){
+    if(S.lock || !S.queue.length) return;
+    S.lock = true;
+    const t = S.queue[0]; const m = manche();
+    const ok = t.bac === id;
+    const fast = !S.calm && !S.late;
+    S.stats[S.m].total++;
+    const chosenEl = document.querySelector(`#bins .bin[data-id="${id}"]`);
+    const rightEl = document.querySelector(`#bins .bin[data-id="${t.bac}"]`);
+    const right = m.bacs.find(b=>b.id===t.bac);
+    let gain = 0;
+    if(ok){
+      S.combo++; S.best=Math.max(S.best,S.combo); S.stats[S.m].ok++;
+      gain = 100 + Math.min(S.combo-1,5)*20 + (fast?50:0);
+      S.score += gain;
+      chosenEl.classList.add('flash-ok'); setTimeout(()=>chosenEl.classList.remove('flash-ok'),400);
+    } else {
+      S.combo = 0;
+      S.misses.push({texte:t.texte, choisi:m.bacs.find(b=>b.id===id).nom, bon:right.nom, explication:t.explication, manche:S.m+1});
+      chosenEl.classList.add('flash-ko'); rightEl.classList.add('show-right');
+      document.querySelector('#front .ticket')?.classList.add('shake');
+      setTimeout(()=>{chosenEl.classList.remove('flash-ko'); rightEl.classList.remove('show-right');},1600);
+    }
+    $('log').innerHTML = `<h3>Verdict</h3>
+      <div class="verdict ${ok?'ok':'ko'}">${ok?`Bien trié · +${gain}`:'Mauvais bac'}</div>
+      ${S.late?'<p class="hint">Ticket traité en retard : bonus de rapidité perdu.</p>':''}
+      ${ok?'':`<p><span class="pill">Vous</span> ${esc(m.bacs.find(b=>b.id===id).nom)} &nbsp; <span class="pill">Bon bac</span> <b>${esc(right.nom)}</b></p>`}
+      <p>${esc(t.explication)}</p>`;
+    hud();
+    // Sur une erreur, on laisse le temps de voir le bon bac avant que le ticket y soit déplacé
+    setTimeout(()=>flyTo(rightEl, !ok, t.texte, ()=>{ S.queue.shift(); S.lock=false; renderQueue(); }), ok?0:900);
+  }
+
+  function endRound(){
+    clearInterval(S.timer);
+    S.m++;
+    if(S.m < NB) setTimeout(roundIntro, 700); else setTimeout(endGame, 700);
+  }
+
+  function endGame(){
+    const ok = S.stats.reduce((a,s)=>a+s.ok,0), tot = S.stats.reduce((a,s)=>a+s.total,0);
+    const pct = Math.round(100*ok/Math.max(1,tot));
+    renderTrack($('endTrack'), NB);
+    $('results').innerHTML = `<div><b>${S.score}</b><small>Points</small></div><div><b>${pct} %</b><small>Tickets bien triés (${ok}/${tot})</small></div><div><b>×${S.best}</b><small>Meilleure série</small></div>`;
+    $('review').innerHTML = S.misses.length ? S.misses.map(x=>`<article><p>${esc(x.texte)}</p><p class="r"><span class="pill">Manche ${x.manche}</span> Vous : ${esc(x.choisi)} · Bon bac : <b>${esc(x.bon)}</b>. ${esc(x.explication)}</p></article>`).join('')
+      : '<p style="color:var(--muted)">Aucun ticket mal trié.</p>';
+    show('sEnd');
+  }
+
+  document.addEventListener('keydown', e=>{
+    if($('sPlay').hidden) return;
+    const n = parseInt(e.key,10);
+    if(n>=1 && n<=manche().bacs.length){ e.preventDefault(); sort(manche().bacs[n-1].id); }
+  });
+  $('bStart').addEventListener('click', ()=>{ newGame(); showHud(true); hud(); startRound(); });
+  $('bGo').addEventListener('click', startRound);
+  $('bAgain').addEventListener('click', ()=>{ S=null; showHud(false); renderTrack($('introTrack'),-1,true); show('sIntro'); });
+
+  S = null;
+  renderTrack($('introTrack'), -1, true);
+  $('startInfo').textContent = `${plural(DATA.manches[0].tickets.length,'ticket')} à trier`;
+}
+</script>
+</body>
+</html>

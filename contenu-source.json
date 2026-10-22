@@ -1,0 +1,220 @@
+{
+  "attente": 20,
+  "manches": [
+    {
+      "court": "Erreur, défaut, défaillance",
+      "titre": "Erreur, défaut ou défaillance ?",
+      "description": "Retrouvez le bon maillon de la chaîne : l'action humaine, ce qu'elle laisse dans le produit, ou ce que l'usager observe.",
+      "cadence": 20,
+      "bacs": [
+        {
+          "id": "err",
+          "nom": "Erreur",
+          "aide": "Action humaine qui produit un résultat incorrect"
+        },
+        {
+          "id": "def",
+          "nom": "Défaut",
+          "aide": "Aussi appelé faute : imperfection dans le produit"
+        },
+        {
+          "id": "dfl",
+          "nom": "Défaillance",
+          "aide": "Le produit n'accomplit plus sa fonction"
+        }
+      ],
+      "tickets": [
+        {
+          "texte": "Une analyste comprend « délai de 30 jours » comme 30 jours ouvrables, alors que le client voulait dire 30 jours civils.",
+          "bac": "err",
+          "explication": "C'est une mauvaise interprétation, donc une action humaine : une erreur."
+        },
+        {
+          "texte": "Dans le code, la condition est écrite age > 18 au lieu de age >= 18.",
+          "bac": "def",
+          "explication": "La condition fautive est dans le produit. Elle reste là tant qu'on ne l'exécute pas : c'est un défaut."
+        },
+        {
+          "texte": "Une cliente de 18 ans se voit refuser l'ouverture de son compte en ligne.",
+          "bac": "dfl",
+          "explication": "L'usager observe que le système ne fait pas ce qu'il doit faire : c'est une défaillance."
+        },
+        {
+          "texte": "Un développeur copie un bloc de code et oublie de renommer une variable.",
+          "bac": "err",
+          "explication": "L'oubli est une action humaine : une erreur. La variable mal nommée qu'elle laisse dans le code serait le défaut."
+        },
+        {
+          "texte": "Le module de facturation contient un taux de taxe codé en dur, avec une ancienne valeur.",
+          "bac": "def",
+          "explication": "La valeur périmée est inscrite dans le produit : c'est un défaut, même si personne ne l'a encore remarqué."
+        },
+        {
+          "texte": "L'application mobile se ferme dès qu'on touche le bouton « Payer ».",
+          "bac": "dfl",
+          "explication": "Le comportement est visible pendant l'utilisation : c'est une défaillance."
+        },
+        {
+          "texte": "La spécification ne précise pas le format des dates attendu dans le formulaire.",
+          "bac": "def",
+          "explication": "Piège : un défaut peut se trouver dans un document, pas seulement dans le code. L'oubli dans la spécification est un défaut."
+        },
+        {
+          "texte": "Des milliers d'usagers reçoivent un relevé mensuel affichant un solde négatif.",
+          "bac": "dfl",
+          "explication": "Les usagers constatent un résultat faux : c'est une défaillance."
+        },
+        {
+          "texte": "Une testeuse lit mal le résultat attendu et déclare réussi un test qui aurait dû échouer.",
+          "bac": "err",
+          "explication": "Les testeurs aussi commettent des erreurs : la mauvaise lecture est une action humaine."
+        }
+      ]
+    },
+    {
+      "court": "Types d'exigences",
+      "titre": "Quel type d'exigence ?",
+      "description": "Ce que le système doit faire, la qualité avec laquelle il doit le faire, ou une restriction imposée au projet.",
+      "cadence": 20,
+      "bacs": [
+        {
+          "id": "ef",
+          "nom": "Fonctionnelle",
+          "aide": "Ce que le système doit faire"
+        },
+        {
+          "id": "enf",
+          "nom": "Non fonctionnelle",
+          "aide": "Une propriété : performance, convivialité, fiabilité…"
+        },
+        {
+          "id": "ctr",
+          "nom": "Contrainte",
+          "aide": "Une restriction sur le système ou le projet"
+        }
+      ],
+      "tickets": [
+        {
+          "texte": "L'usager doit pouvoir réinitialiser son mot de passe par courriel.",
+          "bac": "ef",
+          "explication": "Elle décrit une fonction du système : exigence fonctionnelle."
+        },
+        {
+          "texte": "La page de recherche doit s'afficher en moins de 2 secondes pour 95 % des requêtes.",
+          "bac": "enf",
+          "explication": "Elle décrit une propriété (la performance), pas une fonction : exigence non fonctionnelle."
+        },
+        {
+          "texte": "L'application doit être développée en Java, la plateforme standard de l'entreprise.",
+          "bac": "ctr",
+          "explication": "C'est une restriction imposée sur la façon de construire : une contrainte."
+        },
+        {
+          "texte": "Le système doit calculer le total de la commande, taxes incluses.",
+          "bac": "ef",
+          "explication": "Un calcul que le système doit faire : exigence fonctionnelle."
+        },
+        {
+          "texte": "Un nouvel employé doit pouvoir créer un dossier sans formation, en moins de 10 minutes.",
+          "bac": "enf",
+          "explication": "Elle porte sur la convivialité : exigence non fonctionnelle."
+        },
+        {
+          "texte": "Le client exige que les données soient hébergées dans un centre de données au Québec.",
+          "bac": "ctr",
+          "explication": "C'est une restriction sur l'environnement du système : une contrainte."
+        },
+        {
+          "texte": "Le service doit être disponible 99,9 % du temps.",
+          "bac": "enf",
+          "explication": "La disponibilité est une propriété du système : exigence non fonctionnelle."
+        },
+        {
+          "texte": "Le système doit envoyer un rappel par texto 24 heures avant le rendez-vous.",
+          "bac": "ef",
+          "explication": "Une action que le système accomplit : exigence fonctionnelle."
+        },
+        {
+          "texte": "Le projet doit être livré avant le 1er avril, avec un budget de 200 000 $.",
+          "bac": "ctr",
+          "explication": "Échéance et budget restreignent le projet : une contrainte."
+        }
+      ]
+    },
+    {
+      "court": "Coûts de la qualité",
+      "titre": "Quel coût de la qualité ?",
+      "description": "Éviter les défauts, les chercher, les corriger avant la livraison, ou en payer le prix chez le client.",
+      "cadence": 20,
+      "bacs": [
+        {
+          "id": "prev",
+          "nom": "Prévention",
+          "aide": "Éviter que les défauts apparaissent"
+        },
+        {
+          "id": "eval",
+          "nom": "Évaluation",
+          "aide": "Vérifier, tester, inspecter"
+        },
+        {
+          "id": "dint",
+          "nom": "Défaillance interne",
+          "aide": "Corriger avant la livraison"
+        },
+        {
+          "id": "dext",
+          "nom": "Défaillance externe",
+          "aide": "Payer après la livraison"
+        }
+      ],
+      "tickets": [
+        {
+          "texte": "Former l'équipe aux bonnes pratiques de rédaction des exigences.",
+          "bac": "prev",
+          "explication": "La formation agit avant que l'erreur soit commise : prévention."
+        },
+        {
+          "texte": "Exécuter la campagne de tests de régression avant la livraison.",
+          "bac": "eval",
+          "explication": "Tester sert à mesurer la conformité : évaluation."
+        },
+        {
+          "texte": "Corriger un défaut trouvé par les tests, avant la mise en production.",
+          "bac": "dint",
+          "explication": "Le défaut est corrigé avant que le client le voie : défaillance interne."
+        },
+        {
+          "texte": "Rembourser les clients facturés deux fois.",
+          "bac": "dext",
+          "explication": "Le problème a atteint le client : défaillance externe."
+        },
+        {
+          "texte": "Organiser une revue de code par les pairs.",
+          "bac": "eval",
+          "explication": "Une revue examine un produit existant pour y trouver des défauts : évaluation."
+        },
+        {
+          "texte": "Adopter des normes de codage et un gabarit de spécification.",
+          "bac": "prev",
+          "explication": "Les normes réduisent les erreurs à la source : prévention."
+        },
+        {
+          "texte": "Refaire pendant deux semaines un module rejeté lors des tests internes.",
+          "bac": "dint",
+          "explication": "Le travail à refaire a lieu avant la livraison : défaillance interne."
+        },
+        {
+          "texte": "Traiter 3 000 appels au centre de support après une panne en production.",
+          "bac": "dext",
+          "explication": "La panne a touché les usagers : défaillance externe."
+        },
+        {
+          "texte": "Acheter des licences pour un outil d'automatisation des tests.",
+          "bac": "eval",
+          "explication": "L'outil sert à tester : coût d'évaluation."
+        }
+      ]
+    }
+  ]
+}
